@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
@@ -30,6 +31,8 @@ Route::middleware('auth')->group(function () {
     Route::apiResource('items', ItemController::class);
 });
 
-
+Route::middleware('auth')->group(function () {
+    Route::resource('categories', CategoryController::class);
+});
 
 require __DIR__.'/auth.php';
