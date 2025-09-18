@@ -3,6 +3,8 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\SupplierController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -35,4 +37,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('categories', CategoryController::class);
 });
 
+Route::middleware('auth')->group(function () {
+    Route::resource('suppliers', SupplierController::class);
+    Route::resource('purchase-orders', PurchaseOrderController::class);
+
+    // 状態遷移
+    Route::post('purchase-orders/{purchase_order}/submit',  [PurchaseOrderController::class, 'submit']);
+    Route::post('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive']);
+    Route::post('purchase-orders/{purchase_order}/close',   [PurchaseOrderController::class, 'close']);
+});
 require __DIR__.'/auth.php';
