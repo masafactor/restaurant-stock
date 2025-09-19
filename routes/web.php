@@ -46,4 +46,8 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive']);
     Route::post('purchase-orders/{purchase_order}/close',   [PurchaseOrderController::class, 'close']);
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::apiResource('stock-movements', \App\Http\Controllers\StockMovementController::class);
+});
 require __DIR__.'/auth.php';
