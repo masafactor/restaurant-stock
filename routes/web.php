@@ -50,4 +50,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::apiResource('stock-movements', \App\Http\Controllers\StockMovementController::class);
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::apiResource('menu-items', \App\Http\Controllers\MenuItemController::class);
+});
+
 require __DIR__.'/auth.php';
