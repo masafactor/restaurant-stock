@@ -55,4 +55,9 @@ Route::middleware(['auth'])->group(function () {
     Route::apiResource('menu-items', \App\Http\Controllers\MenuItemController::class);
 });
 
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('daily-sales/import', \App\Http\Controllers\DailySalesImportController::class);
+});
+
 require __DIR__.'/auth.php';
