@@ -4,6 +4,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +59,19 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::post('daily-sales/import', \App\Http\Controllers\DailySalesImportController::class);
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('reports/sales-summary',      [ReportController::class, 'salesSummary']);
+    Route::get('reports/purchase-vs-sales',  [ReportController::class, 'purchaseVsSales']);
+    Route::get('reports/inventory-valuation',[ReportController::class, 'inventoryValuation']);
+});
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('reports/sales-summary',       [ReportController::class, 'salesSummary']);
+    Route::get('reports/purchase-vs-sales',   [ReportController::class, 'purchaseVsSales']);
+    Route::get('reports/inventory-valuation', [ReportController::class, 'inventoryValuation']);
 });
 
 require __DIR__.'/auth.php';
