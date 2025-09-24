@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseOrderController;
@@ -72,6 +73,10 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/sales-summary',       [ReportController::class, 'salesSummary']);
     Route::get('reports/purchase-vs-sales',   [ReportController::class, 'purchaseVsSales']);
     Route::get('reports/inventory-valuation', [ReportController::class, 'inventoryValuation']);
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('dashboard/summary', [DashboardController::class, 'summary']);
 });
 
 require __DIR__.'/auth.php';
