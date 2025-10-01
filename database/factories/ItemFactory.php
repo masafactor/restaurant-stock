@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class ItemFactory extends Factory
             'unit' => 'pcs',
             'standard_cost' => fake()->randomFloat(4, 0, 100),
             'is_active' => true,
+            'category_id' => Category::factory(),
         ];
     }
 }

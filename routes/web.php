@@ -30,16 +30,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
 Route::middleware('auth')->group(function () {
-    Route::apiResource('items', ItemController::class);
-});
-
-Route::middleware('auth')->group(function () {
+    Route::resource('items', ItemController::class);
     Route::resource('categories', CategoryController::class);
-});
-
-Route::middleware('auth')->group(function () {
     Route::resource('suppliers', SupplierController::class);
     Route::resource('purchase-orders', PurchaseOrderController::class);
 
@@ -47,36 +40,21 @@ Route::middleware('auth')->group(function () {
     Route::post('purchase-orders/{purchase_order}/submit',  [PurchaseOrderController::class, 'submit']);
     Route::post('purchase-orders/{purchase_order}/receive', [PurchaseOrderController::class, 'receive']);
     Route::post('purchase-orders/{purchase_order}/close',   [PurchaseOrderController::class, 'close']);
-});
 
-Route::middleware(['auth'])->group(function () {
-    Route::apiResource('stock-movements', \App\Http\Controllers\StockMovementController::class);
-});
+    Route::resource('stock-movements', \App\Http\Controllers\StockMovementController::class);
+    Route::resource('menu-items', \App\Http\Controllers\MenuItemController::class);
 
-Route::middleware(['auth'])->group(function () {
-    Route::apiResource('menu-items', \App\Http\Controllers\MenuItemController::class);
-});
+    // 売上取込
+    Route::post('daily-sales/import', \App\Http\Controllers\DailySalesImportController::class)
+        ->name('daily-sales.import');
 
+    // レポート
+    Route::get('reports/sales-summary',      [ReportController::class, 'salesSummary'])->name('reports.salesSummary');
+    Route::get('reports/purchase-vs-sales',  [ReportController::class, 'purchaseVsSales'])->name('reports.purchaseVsSales');
+    Route::get('reports/inventory-valuation',[ReportController::class, 'inventoryValuation'])->name('reports.inventoryValuation');
 
-Route::middleware(['auth'])->group(function () {
-    Route::post('daily-sales/import', \App\Http\Controllers\DailySalesImportController::class);
-});
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('reports/sales-summary',      [ReportController::class, 'salesSummary']);
-    Route::get('reports/purchase-vs-sales',  [ReportController::class, 'purchaseVsSales']);
-    Route::get('reports/inventory-valuation',[ReportController::class, 'inventoryValuation']);
-});
-
-
-Route::middleware('auth')->group(function () {
-    Route::get('reports/sales-summary',       [ReportController::class, 'salesSummary']);
-    Route::get('reports/purchase-vs-sales',   [ReportController::class, 'purchaseVsSales']);
-    Route::get('reports/inventory-valuation', [ReportController::class, 'inventoryValuation']);
-});
-
-Route::middleware('auth')->group(function () {
-    Route::get('dashboard/summary', [DashboardController::class, 'summary']);
+    // ダッシュボード API
+    Route::get('dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 });
 
 require __DIR__.'/auth.php';

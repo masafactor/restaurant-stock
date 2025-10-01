@@ -27,6 +27,7 @@ class StoreItemRequest extends FormRequest
         'unit' => ['required','string','max:20'],
         'standard_cost' => ['required','numeric','min:0'],
         'is_active' => ['boolean'],
+        'category_id' => ['nullable','exists:categories,id'],
         ];
     }
 }

@@ -5,9 +5,10 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link ,usePage} from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+const page = usePage()
 </script>
 
 <template>
@@ -39,6 +40,14 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+
+                                <NavLink
+                                    :href="route('items.index')"
+                                    :active="route().current('items.index')"
+                                >
+                                    商品
+                                </NavLink>
+
                             </div>
                         </div>
 
@@ -189,8 +198,22 @@ const showingNavigationDropdown = ref(false);
                 </div>
             </header>
 
+
+        <!-- ✅ フラッシュメッセージ -->
+            <div v-if="page.props.flash.success" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                <div class="rounded bg-green-100 border border-green-300 text-green-800 px-4 py-2">
+                    {{ page.props.flash.success }}
+                </div>
+            </div>
+            <div v-if="page.props.flash.error" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                <div class="rounded bg-red-100 border border-red-300 text-red-800 px-4 py-2">
+                    {{ page.props.flash.error }}
+                </div>
+            </div>
+
             <!-- Page Content -->
             <main>
+
                 <slot />
             </main>
         </div>
