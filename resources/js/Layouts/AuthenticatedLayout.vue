@@ -48,6 +48,13 @@ const page = usePage()
                                     商品
                                 </NavLink>
 
+                                <NavLink
+                                    :href="route('categories.index')"
+                                    :active="route().current('categories.index')"
+                                >
+                                    カテゴリー
+                                </NavLink>
+
                             </div>
                         </div>
 
