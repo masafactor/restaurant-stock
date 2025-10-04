@@ -2,52 +2,144 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StockMovement;
 use App\Http\Requests\StoreStockMovementRequest;
+use App\Models\Item;
+use App\Models\Location;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Inertia\Inertia;
 
 class StockMovementController extends Controller
 {
-    use AuthorizesRequests;
-
     public function index(Request $request)
     {
         $this->authorize('viewAny', StockMovement::class);
 
-        $q = StockMovement::query()
-            ->with('item')
-            ->when($request->integer('item_id'), fn($q,$id) => $q->where('item_id',$id))
-            ->when($request->date('from'), fn($q,$d) => $q->whereDate('moved_at','>=',$d))
-            ->when($request->date('to'), fn($q,$d) => $q->whereDate('moved_at','<=',$d))
-            ->orderByDesc('id');
+        $itemId     = $request->integer('item_id');
+        $locationId = $request->integer('location_id');
+        $type       = $request->string('type')->toString() ?: null;
+        $from       = $request->date('from');
+        $to         = $request->date('to');
 
-        return $q->paginate(20);
+        $movements = StockMovement::with(['item:id,sku,name', 'location:id,name'])
+            ->when($itemId,     fn($q) => $q->where('item_id', $itemId))
+            ->when($locationId, fn($q) => $q->where('location_id', $locationId))
+            ->when($type,       fn($q) => $q->where('type', $type))
+            ->when($from,       fn($q) => $q->whereDate('moved_at', '>=', $from))
+            ->when($to,         fn($q) => $q->whereDate('moved_at', '<=', $to))
+            ->orderByDesc('moved_at')
+            ->orderByDesc('id')
+            ->paginate(20)
+            ->through(fn(StockMovement $m) => [
+                'id'        => $m->id,
+                'type'      => $m->type,
+                'qty'       => (float)$m->qty,
+                'unit_cost' => $m->unit_cost ? (float)$m->unit_cost : null,
+                'moved_at'  => $m->moved_at?->format('Y-m-d'),
+                'note'      => $m->note,
+                'item'      => $m->item?->only('id','sku','name'),
+                'location'  => $m->location?->only('id','name'),
+                'can'       => [
+                    'delete' => $request->user()->can('delete', $m),
+                ],
+            ]);
+
+        // フィルター用マスタ
+        $items     = Item::orderBy('name')->get(['id','sku','name']);
+        $locations = Location::where('is_active', true)->orderBy('name')->get(['id','name']);
+
+        // 合計（絞り込み条件に一致した範囲）
+        $sum = StockMovement::when($itemId,     fn($q) => $q->where('item_id', $itemId))
+            ->when($locationId, fn($q) => $q->where('location_id', $locationId))
+            ->when($type,       fn($q) => $q->where('type', $type))
+            ->when($from,       fn($q) => $q->whereDate('moved_at', '>=', $from))
+            ->when($to,         fn($q) => $q->whereDate('moved_at', '<=', $to))
+            ->selectRaw("
+                SUM(
+                  CASE type
+                    WHEN 'receive' THEN qty
+                    WHEN 'waste'   THEN -qty
+                    WHEN 'adjust'  THEN qty
+                  END
+                ) as total_qty
+            ")->value('total_qty') ?? 0;
+
+        return Inertia::render('StockMovements/Index', [
+            'movements' => $movements,
+            'items'     => $items,
+            'locations' => $locations,
+            'filters'   => [
+                'item_id'     => $itemId,
+                'location_id' => $locationId,
+                'type'        => $type,
+                'from'        => $from?->format('Y-m-d'),
+                'to'          => $to?->format('Y-m-d'),
+            ],
+            'sum'       => (float)$sum,
+            'can'       => [
+                'create' => $request->user()->can('create', StockMovement::class),
+            ],
+        ]);
+    }
+
+    public function create()
+    {
+        $this->authorize('create', StockMovement::class);
+
+        return Inertia::render('StockMovements/Create', [
+            'items'     => Item::orderBy('name')->get(['id','sku','name']),
+            'locations' => Location::where('is_active', true)->orderBy('name')->get(['id','name']),
+        ]);
     }
 
     public function store(StoreStockMovementRequest $request)
     {
-        $movement = StockMovement::create($request->validated());
-        return response()->json($movement, 201);
+        $data = $request->validated();
+        StockMovement::create($data);
+
+        return redirect()
+            ->route('stock-movements.index')
+            ->with('success', '在庫異動を登録しました');
     }
 
-    public function show(StockMovement $stock_movement)
+    // app/Http/Controllers/StockMovementController.php
+    public function show(StockMovement $stockMovement)
     {
-        $this->authorize('view', $stock_movement);
-        return $stock_movement->load('item');
+        $this->authorize('view', $stockMovement);
+
+        return Inertia::render('StockMovements/Show', [
+            'movement' => $stockMovement->load('item', 'location'),
+        ]);
     }
 
-    public function update(StoreStockMovementRequest $request, StockMovement $stock_movement)
+    public function edit(StockMovement $stockMovement)
     {
-        $this->authorize('update', $stock_movement);
-        $stock_movement->update($request->validated());
-        return $stock_movement;
+        $this->authorize('update', $stockMovement);
+
+        return Inertia::render('StockMovements/Edit', [
+            'movement'   => $stockMovement,
+            'items'      => Item::select('id','name')->get(),
+            'locations'  => Location::select('id','name')->get(),
+        ]);
     }
 
-    public function destroy(StockMovement $stock_movement)
+    public function update(StoreStockMovementRequest $request, StockMovement $stockMovement)
     {
-        $this->authorize('delete', $stock_movement);
-        $stock_movement->delete();
-        return response()->noContent();
+        $stockMovement->update($request->validated());
+
+        return redirect()->route('stock-movements.index')
+            ->with('success', '在庫異動を更新しました');
+    }
+
+
+    public function destroy(StockMovement $stockMovement)
+    {
+        $this->authorize('delete', $stockMovement);
+
+        $stockMovement->delete();
+
+        return redirect()
+            ->route('stock-movements.index')
+            ->with('success', '在庫異動を削除しました');
     }
 }

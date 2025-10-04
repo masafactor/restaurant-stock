@@ -11,7 +11,13 @@ class StockMovement extends Model
     use HasFactory;
 
     protected $fillable = [
-        'item_id', 'type', 'qty', 'unit_cost', 'moved_at', 'note',
+        'item_id',
+        'location_id',   // ← これを必ず入れる
+        'type',
+        'qty',
+        'unit_cost',
+        'moved_at',
+        'note',
     ];
 
     protected $casts = [
@@ -20,8 +26,16 @@ class StockMovement extends Model
         'moved_at' => 'date',
     ];
 
+    
+
     public function item()
     {
         return $this->belongsTo(Item::class);
     }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+
 }

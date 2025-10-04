@@ -23,6 +23,7 @@ class StoreStockMovementRequest extends FormRequest
     {
         return [
         'item_id'   => ['required','exists:items,id'],
+        'location_id' => ['required', 'exists:locations,id'], 
         'type'      => ['required','in:receive,waste,adjust'],
         'qty'       => ['required','numeric','gt:0'],
         'unit_cost' => ['nullable','numeric','gte:0'],

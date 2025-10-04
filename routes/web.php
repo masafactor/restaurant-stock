@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\ReportController;
@@ -53,6 +54,8 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/purchase-vs-sales',  [ReportController::class, 'purchaseVsSales'])->name('reports.purchaseVsSales');
     Route::get('reports/inventory-valuation',[ReportController::class, 'inventoryValuation'])->name('reports.inventoryValuation');
 
+    Route::resource('locations', LocationController::class);
+    
     // ダッシュボード API
     Route::get('dashboard/summary', [DashboardController::class, 'summary'])->name('dashboard.summary');
 });

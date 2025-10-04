@@ -54,6 +54,19 @@ const page = usePage()
                                 >
                                     カテゴリー
                                 </NavLink>
+                                <NavLink
+                                :href="route('stock-movements.index')"
+                                :active="route().current('stock-movements.*')"
+                                >
+                                在庫異動
+                                </NavLink>
+
+                                <NavLink
+                                :href="route('locations.index')"
+                                :active="route().current('locations.index')"
+                                >
+                                ロケーション
+                                </NavLink>
 
                             </div>
                         </div>
